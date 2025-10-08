@@ -9,8 +9,9 @@ Status: Prototype / reference — audit and adapt before production use.
 Clone, populate environment, and run with Docker Compose:
 
 ```powershell
-cd "C:\Users\Mfutso Bengo\Desktop\mb_projects\ssi"
+# clone the repository and run from the project root
 git clone https://github.com/88448844/self-sovereign-identity-SSI.git
+cd self-sovereign-identity-SSI
 cp env/.env.example env/.env
 docker-compose up --build
 ```
