@@ -1,0 +1,62 @@
+# SSI HTTP Production Reference (FastAPI)
+
+A compact, production-minded FastAPI reference implementation demonstrating core SSI flows: issuer/holder/verifier bootstrapping, credential issuance, presentation, and verification. This repository is intended as a deployable reference (demo-grade) — do not expose secrets or the local key storage to the public internet.
+
+Status: Prototype / reference — audit and adapt before production use.
+
+## Quickstart
+
+Clone, populate environment, and run with Docker Compose:
+
+```powershell
+cd "C:\Users\Mfutso Bengo\Desktop\mb_projects\ssi"
+git clone https://github.com/88448844/self-sovereign-identity-SSI.git
+cp env/.env.example env/.env
+docker-compose up --build
+```
+
+Open http://localhost:8000/docs
+
+## Core flow
+1. Bootstrap issuer, holder, and verifier services.
+2. Issue a credential via `POST /v1/issuer/issue` with a subject DID and attributes.
+3. Create a verification challenge with `POST /v1/verifier/challenge` (optionally include `{"aud":"<verifier-did>"}`).
+4. Holder presents with `POST /v1/holder/present` including `reveal_fields`.
+5. Verifier verifies with `POST /v1/verifier/verify` using the returned `{eph, nonce, ct}` payload.
+
+## Important notes
+- Keys in this demo are stored locally at `services/api/app/keys/`. Replace with a secure KMS (AWS KMS, GCP KMS, or similar) for production.
+- Merkle-proof code here is illustrative. Replace with a production-grade inclusion proof (e.g., Poseidon/Keccak tree) or adopt an appropriate standard like SD-JWT VC.
+- The JWE shape uses JOSE (ECDH-ES + A256GCM) to deliver encrypted payloads compatible with the verifier's `#agree` key.
+- This reference does not provide TLS/mTLS, WAF, or authentication. Put a hardened API gateway and strong access controls in front of any production deployment.
+
+## Development
+- Python managed with Poetry (see `services/api/pyproject.toml`).
+- Run tests and linters inside the API container or locally via Poetry.
+
+Common commands (inside the repo root):
+
+```powershell
+# run the full stack (Docker)
+docker-compose up --build
+
+# run tests locally (inside container recommended)
+docker-compose run --rm api poetry run pytest
+
+docker-compose run --rm api poetry run ruff check app tests
+```
+
+## Project layout
+- `services/api/app/` — FastAPI application code (routes, crypto helpers, storage, models).
+- `env/` — runtime config and env var examples (`env/.env.example`).
+- `services/api/tests/` — pytest unit tests.
+
+## Security & secrets
+- Never commit `env/.env` or private keys. This repo adds a `.gitignore` entry to exclude local secrets; double-check before push.
+- If secrets were accidentally committed, remove them from history and rotate credentials immediately.
+
+## Contributing
+See `CONTRIBUTING.md` for development guidelines, tests, and commit conventions.
+
+## License
+This project is licensed under the MIT License — see `LICENSE`.
