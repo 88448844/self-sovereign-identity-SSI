@@ -9,6 +9,44 @@ services:
       - redis
     ports:
       - "8000:8000"
+  ui:
+    build: ./services/demo-ui
+    environment:
+      - VITE_API_BASE_URL=http://localhost:8000
+    depends_on:
+      - api
+    ports:
+      - "5173:5173"
+  issuer-ui:
+    build:
+      context: .
+      dockerfile: services/issuer-ui/Dockerfile
+    environment:
+      - VITE_API_BASE_URL=http://localhost:8000
+    depends_on:
+      - api
+    ports:
+      - "5174:5174"
+  wallet-ui:
+    build:
+      context: .
+      dockerfile: services/wallet-ui/Dockerfile
+    environment:
+      - VITE_API_BASE_URL=http://localhost:8000
+    depends_on:
+      - api
+    ports:
+      - "5175:5175"
+  verifier-ui:
+    build:
+      context: .
+      dockerfile: services/verifier-ui/Dockerfile
+    environment:
+      - VITE_API_BASE_URL=http://localhost:8000
+    depends_on:
+      - api
+    ports:
+      - "5176:5176"
   db:
     image: postgres:16
     environment:

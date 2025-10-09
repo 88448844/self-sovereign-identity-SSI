@@ -137,3 +137,85 @@ def test_issue_requires_idempotency_header(client):
     )
     assert response.status_code == 428
     assert response.json()["detail"] == "Idempotency-Key header required"
+
+
+def test_admin_reset_endpoint(client):
+    issuer = client.post("/v1/bootstrap/issuer", params={"name": "Reset Issuer"})
+    assert issuer.status_code == 200
+    holder = client.post("/v1/bootstrap/holder", params={"label": "Reset Holder"})
+    assert holder.status_code == 200
+    verifier = client.post("/v1/bootstrap/verifier", params={"label": "Reset Verifier"})
+    assert verifier.status_code == 200
+    issue_resp = client.post(
+        "/v1/issuer/issue",
+        headers={"Idempotency-Key": "reset-1"},
+        json={
+            "subject_did": holder.json()["holder_did"],
+            "attributes": {"name": "Reset", "is_student": True},
+        },
+    )
+    assert issue_resp.status_code == 200
+
+    reset_resp = client.post("/v1/admin/reset")
+    assert reset_resp.status_code == 200
+    assert reset_resp.json()["ok"] is True
+
+    issuer2 = client.post("/v1/bootstrap/issuer", params={"name": "Reset Issuer 2"})
+    assert issuer2.status_code == 200
+    holder2 = client.post("/v1/bootstrap/holder", params={"label": "Reset Holder 2"})
+    assert holder2.status_code == 200
+    issue_resp2 = client.post(
+        "/v1/issuer/issue",
+        headers={"Idempotency-Key": "reset-2"},
+        json={
+            "subject_did": holder2.json()["holder_did"],
+            "attributes": {"name": "Reset2"},
+        },
+    )
+    assert issue_resp2.status_code == 200
+
+    creds = client.get(f"/v1/holder/credentials/{holder2.json()['holder_did']}")
+    assert creds.status_code == 200
+    assert len(creds.json()["credentials"]) == 1
+
+
+def test_wallet_claim_flow(client):
+    issuer = client.post("/v1/bootstrap/issuer", params={"name": "Wallet Flow"})
+    assert issuer.status_code == 200
+    holder = client.post("/v1/bootstrap/holder", params={"label": "Wallet User"})
+    assert holder.status_code == 200
+
+    offer_payload = {
+        "challenge": "challenge-123",
+        "issuer_did": issuer.json()["issuer_did"],
+        "claims": {"name": True, "over18": True},
+        "ttl_seconds": 300,
+    }
+
+    register = client.post("/v1/issuer/offers", json=offer_payload)
+    assert register.status_code == 200
+    assert register.json()["challenge"] == offer_payload["challenge"]
+
+    claim = client.post(
+        "/v1/wallet/claim",
+        json={
+            "challenge": offer_payload["challenge"],
+            "holder_did": holder.json()["holder_did"],
+            "attributes": {"name": "Wallet User", "over18": True},
+        },
+    )
+    assert claim.status_code == 200
+    body = claim.json()
+    assert body["subject"] == holder.json()["holder_did"]
+    assert body["attrs"]["name"] == "Wallet User"
+
+    # Second claim should fail because challenge is consumed
+    duplicate = client.post(
+        "/v1/wallet/claim",
+        json={
+            "challenge": offer_payload["challenge"],
+            "holder_did": holder.json()["holder_did"],
+            "attributes": {"name": "Wallet User", "over18": True},
+        },
+    )
+    assert duplicate.status_code == 404

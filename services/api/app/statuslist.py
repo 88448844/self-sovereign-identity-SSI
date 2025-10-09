@@ -33,7 +33,8 @@ class StatusListManager:
                 ),
                 {"l": list_id},
             ).first()
-            idx = (row[0] or -1) + 1
+            current_max = row[0] if row and row[0] is not None else -1
+            idx = current_max + 1
         return list_id, idx
 
     def publish(self, list_id: str):

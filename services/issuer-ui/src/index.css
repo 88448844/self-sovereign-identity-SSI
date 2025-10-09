@@ -1,0 +1,35 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  @apply bg-slate-100 text-slate-900;
+}
+
+.card {
+  @apply rounded-2xl border border-slate-200 bg-white shadow-sm;
+}
+
+.card-header {
+  @apply border-b border-slate-100 p-6;
+}
+
+.card-title {
+  @apply text-lg font-semibold;
+}
+
+.card-description {
+  @apply text-sm text-slate-500;
+}
+
+.card-content {
+  @apply p-6;
+}
+
+.card-footer {
+  @apply border-t border-slate-100 p-6;
+}

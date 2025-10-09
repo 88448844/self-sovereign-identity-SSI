@@ -14,3 +14,8 @@ class Settings(BaseModel):
     otlp_endpoint: str = os.getenv("OTLP_ENDPOINT", "")
     statuslist_chunk: int = int(os.getenv("STATUSLIST_CHUNK", "16384"))
     service_endpoint_prefix: str = os.getenv("SERVICE_PREFIX", "inbox://")
+    ui_cors_origins: str = os.getenv(
+        "UI_CORS_ORIGINS",
+        "http://localhost:5173,http://localhost:5174,http://localhost:5175,http://localhost:5176",
+    )
+    issuer_admin_token: str = os.getenv("ISSUER_ADMIN_TOKEN", "")

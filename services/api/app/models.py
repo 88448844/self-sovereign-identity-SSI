@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict, Field
 from typing import Dict, List
 
 
@@ -30,15 +30,20 @@ class IssueRequest(BaseModel):
 
 
 class IssueResponse(BaseModel):
+    model_config = ConfigDict(populate_by_name=True, protected_namespaces=())
     id: str
     issuer: str
     subject: str
-    schema: str
+    schema_id: str = Field(alias="schema")
     attrs: Dict[str, object]
     merkle: Dict[str, object]
     status: Dict[str, object]
     issued_at: int
     issuer_signature: str
+
+    @property
+    def schema(self) -> str:
+        return self.schema_id
 
 
 class RevokeRequest(BaseModel):
@@ -70,3 +75,22 @@ class VerifyResponse(BaseModel):
     ok: bool
     message: str
     disclosed: Dict[str, object]
+
+
+class IssuanceOfferRequest(BaseModel):
+    challenge: str
+    issuer_did: str
+    claims: Dict[str, bool]
+    ttl_seconds: int | None = 600
+
+
+class IssuanceOfferResponse(BaseModel):
+    ok: bool
+    challenge: str
+    ttl_seconds: int
+
+
+class WalletClaimRequest(BaseModel):
+    challenge: str
+    holder_did: str
+    attributes: Dict[str, object]

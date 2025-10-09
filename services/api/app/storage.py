@@ -82,6 +82,25 @@ def save_issuer(Session, name, did, did_doc):
         )
 
 
+def get_issuer_by_did(Session, did: str):
+    with Session() as session:
+        row = session.execute(
+            text("SELECT did, name, did_doc FROM issuers WHERE did=:d"),
+            {"d": did},
+        ).first()
+        if not row:
+            return None
+
+        class Issuer:
+            pass
+
+        obj = Issuer()
+        obj.did = row[0]
+        obj.name = row[1]
+        obj.did_doc = _map_did_doc(row)
+        return obj
+
+
 def save_holder(Session, label, did, did_doc):
     with Session.begin() as session:
         session.execute(
@@ -236,6 +255,30 @@ def get_credential(Session, cred_id: str):
         }
 
 
+def list_credentials_for_holder(Session, holder_did: str):
+    with Session() as session:
+        rows = session.execute(
+            text(
+                "SELECT id,issuer,subject,schema,attrs,merkle,status,issued_at "
+                "FROM credentials WHERE subject=:sub ORDER BY issued_at DESC"
+            ),
+            {"sub": holder_did},
+        ).all()
+        return [
+            {
+                "id": row[0],
+                "issuer": row[1],
+                "subject": row[2],
+                "schema": row[3],
+                "attrs": row[4],
+                "merkle": row[5],
+                "status": row[6],
+                "issued_at": row[7],
+            }
+            for row in rows
+        ]
+
+
 def revoke(Session, cred_id: str):
     with Session.begin() as session:
         row = session.execute(
@@ -260,3 +303,13 @@ def revoke(Session, cred_id: str):
 def health_check(engine):
     with engine.connect() as conn:
         conn.execute(text("SELECT 1"))
+
+
+def reset_state(Session):
+    with Session.begin() as session:
+        session.execute(
+            text(
+                "TRUNCATE TABLE credentials, revocations, statuslists, holders, issuers, verifiers "
+                "RESTART IDENTITY CASCADE"
+            )
+        )

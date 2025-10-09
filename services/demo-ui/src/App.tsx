@@ -1,19 +1,22 @@
 import React, { useMemo, useState } from "react";
 import {
+  Badge,
+  Button,
   Card,
   CardContent,
   CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
+  Input,
+  Label,
+  Switch,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+  Textarea,
+} from "@kit";
 import { toast } from "sonner";
 import {
   Loader2,
@@ -49,6 +52,13 @@ type DidDoc = {
 };
 
 const pretty = (x: unknown) => JSON.stringify(x, null, 2);
+const canonicalDid = (did?: string) => {
+  if (!did) return "—";
+  const parts = did.split(":");
+  return parts[parts.length - 1];
+};
+const compact = (value: string, keep = 18) =>
+  value.length <= keep * 2 ? value : `${value.slice(0, keep)}…${value.slice(-keep)}`;
 
 type ApiOptions = RequestInit & { query?: Record<string, string> };
 
@@ -415,7 +425,10 @@ export default function SsiDemoApp(): JSX.Element {
                   {issuer ? (
                     <JsonBlock
                       title="Issuer"
-                      data={issuer}
+                      data={{
+                        ...issuer,
+                        issuer_did_display: canonicalDid(issuer.issuer_did),
+                      }}
                       onCopy={() => copy(issuer.issuer_did)}
                     />
                   ) : (
@@ -442,7 +455,10 @@ export default function SsiDemoApp(): JSX.Element {
                   {holder ? (
                     <JsonBlock
                       title="Holder"
-                      data={holder}
+                      data={{
+                        ...holder,
+                        holder_did_display: canonicalDid(holder.holder_did),
+                      }}
                       onCopy={() => copy(holder.holder_did)}
                     />
                   ) : (
@@ -468,7 +484,10 @@ export default function SsiDemoApp(): JSX.Element {
                   {verifier ? (
                     <JsonBlock
                       title="Verifier"
-                      data={verifier}
+                      data={{
+                        ...verifier,
+                        verifier_did_display: canonicalDid(verifier.verifier_did),
+                      }}
                       onCopy={() => copy(verifier.verifier_did)}
                     />
                   ) : (
@@ -513,11 +532,19 @@ export default function SsiDemoApp(): JSX.Element {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <Label>Subject (Holder DID)</Label>
-                      <Input disabled value={holder?.holder_did ?? "—"} />
+                      <Input
+                        disabled
+                        value={canonicalDid(holder?.holder_did)}
+                        title={holder?.holder_did ?? ""}
+                      />
                     </div>
                     <div>
                       <Label>Issuer DID</Label>
-                      <Input disabled value={issuer?.issuer_did ?? "—"} />
+                      <Input
+                        disabled
+                        value={canonicalDid(issuer?.issuer_did)}
+                        title={issuer?.issuer_did ?? ""}
+                      />
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
@@ -663,7 +690,13 @@ export default function SsiDemoApp(): JSX.Element {
                           />
                         </div>
                       )}
-                      <JsonBlock data={jwe} compact />
+                      <JsonBlock
+                        data={{
+                          ...jwe,
+                          ct: compact(jwe.ct, 24),
+                        }}
+                        compact
+                      />
                     </div>
                   ) : (
                     <DisabledNote text="Create a presentation to view the encrypted payload." />
@@ -685,7 +718,7 @@ export default function SsiDemoApp(): JSX.Element {
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-slate-600">
-                    Verifier DID: {verifier?.verifier_did ?? "—"}
+                    Verifier DID: {canonicalDid(verifier?.verifier_did)}
                   </p>
                 </CardContent>
                 <CardFooter>
