@@ -58,11 +58,7 @@ docker-compose run --rm api poetry run ruff check app tests
 - `env/` — runtime config and env var examples (`env/.env.example`).
 - `services/api/tests/` — pytest-based integration tests.
 - `services/demo-ui/` — optional React demo that exercises the flows (Vite + Tailwind).
-- `services/issuer-ui/`, `services/wallet-ui/`, `services/verifier-ui/` — role-specific frontends (issuer admin portal, wallet, verifier kiosk) that call the same API.
-
-## Security & secrets
-- Never commit `env/.env` or private keys. This repo adds a `.gitignore` entry to exclude local secrets; double-check before push.
-- If secrets were accidentally committed, remove them from history and rotate credentials immediately.
+- `services/issuer-ui/`, `se
 
 ## Contributing
 See `CONTRIBUTING.md` for development guidelines, tests, and commit conventions.
