@@ -2,7 +2,7 @@
 
 A compact, production-minded FastAPI reference implementation demonstrating core SSI flows: issuer/holder/verifier bootstrapping, credential issuance, presentation, and verification. This repository is intended as a deployable reference (demo-grade) — do not expose secrets or the local key storage to the public internet.
 
-Status: Prototype / reference — audit and adapt before production use.
+Status: Prototype / reference : audit and adapt before production use.
 
 ## Quickstart
 
