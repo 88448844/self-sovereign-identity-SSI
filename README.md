@@ -61,7 +61,7 @@ docker-compose run --rm api poetry run ruff check app tests
 - `services/issuer-ui/`, `se
 
 ## Contributing
-See `CONTRIBUTING.md` for development guidelines, tests, and commit conventions.
+See `CONTRIBUTING.md` for development guidelines, tests, and commit conventions. Like the repo :)
 
 ## License
 This project is licensed under the MIT License — see `LICENSE`.
